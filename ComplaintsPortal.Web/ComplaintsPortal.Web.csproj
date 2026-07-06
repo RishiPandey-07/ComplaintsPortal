@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" />
@@ -97,6 +97,8 @@
     <Content Include="Employee\MyRequests.aspx" />
     <Content Include="Employee\NewRequest.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="Admin\FieldBuilder.aspx" />
+    <Content Include="TechExpert\ConnectionRegister.aspx" />
     <Content Include="TechExpert\Pool.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -114,6 +116,13 @@
     </Compile>
     <Compile Include="Admin\Divisions.aspx.designer.cs">
       <DependentUpon>Divisions.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\FieldBuilder.aspx.cs">
+      <DependentUpon>FieldBuilder.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\FieldBuilder.aspx.designer.cs">
+      <DependentUpon>FieldBuilder.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\RequestTypes.aspx.cs">
       <DependentUpon>RequestTypes.aspx</DependentUpon>
@@ -221,6 +230,13 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SessionContext.cs" />
+    <Compile Include="TechExpert\ConnectionRegister.aspx.cs">
+      <DependentUpon>ConnectionRegister.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TechExpert\ConnectionRegister.aspx.designer.cs">
+      <DependentUpon>ConnectionRegister.aspx</DependentUpon>
+    </Compile>
     <Compile Include="TechExpert\Pool.aspx.cs">
       <DependentUpon>Pool.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
