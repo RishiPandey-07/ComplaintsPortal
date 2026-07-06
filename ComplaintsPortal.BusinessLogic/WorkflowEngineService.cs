@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using ComplaintsPortal.DataAccess;
 using ComplaintsPortal.Entities;
@@ -22,7 +22,7 @@ namespace ComplaintsPortal.BusinessLogic
 
         /// <summary>Submits a flow-based request, positioning it at the workflow's first stage.
         /// Falls back to a general (no-flow) submission if no active workflow is configured yet.</summary>
-        public string SubmitRequest(ComplaintRequest r, int? subTypeId, string ip, out string requestNumber)
+        public string SubmitRequest(ComplaintRequest r, int? subTypeId, string ip, List<RequestFieldValue> fieldValues, out string requestNumber)
         {
             requestNumber = null;
             if (r.RequestTypeId == 0 || string.IsNullOrWhiteSpace(r.RequesterPcno) || r.DivisionId == 0)
@@ -42,6 +42,11 @@ namespace ComplaintsPortal.BusinessLogic
             else
             {
                 requestId = _requestRepo.Insert(r);
+            }
+
+            if (fieldValues != null && fieldValues.Count > 0)
+            {
+                _requestRepo.InsertFieldValues(requestId, fieldValues);
             }
 
             _auditRepo.Log(r.RequesterPcno, "REQUEST", requestId.ToString(), "SUBMIT", "Submitted new request", ip);

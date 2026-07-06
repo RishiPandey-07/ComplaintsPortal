@@ -44,7 +44,28 @@
                                 </div>
                             </div>
 
-                            <h6 class="fw-600 mb-3 text-secondary border-bottom pb-2">Location & Description</h6>
+                            <h6 class="fw-600 mb-3 text-secondary border-bottom pb-2">Location & Details</h6>
+
+                            <asp:Repeater ID="rptCustomFields" runat="server" OnItemDataBound="rptCustomFields_ItemDataBound">
+                                <ItemTemplate>
+                                    <div class="form-group-portal mb-3">
+                                        <label class="form-label-portal">
+                                            <%# Eval("FieldLabel") %> 
+                                            <asp:Literal runat="server" Visible='<%# (string)Eval("IsMandatory") == "Y" %>' Text="<span class='text-danger'>*</span>" />
+                                        </label>
+                                        <asp:HiddenField ID="hfFieldId" runat="server" Value='<%# Eval("FieldId") %>' />
+                                        <asp:HiddenField ID="hfIsMandatory" runat="server" Value='<%# Eval("IsMandatory") %>' />
+                                        <asp:HiddenField ID="hfFieldType" runat="server" Value='<%# Eval("FieldType") %>' />
+
+                                        <!-- Hidden controls, only the matching type is shown in code-behind -->
+                                        <asp:TextBox ID="txtSingle" runat="server" CssClass="form-control-portal" Visible="false" />
+                                        <asp:TextBox ID="txtMulti" runat="server" CssClass="form-control-portal" TextMode="MultiLine" Rows="3" Visible="false" />
+                                        <asp:TextBox ID="txtNumber" runat="server" CssClass="form-control-portal" TextMode="Number" Visible="false" />
+                                        <asp:TextBox ID="txtDate" runat="server" CssClass="form-control-portal" TextMode="Date" Visible="false" />
+                                        <asp:DropDownList ID="ddlDropdown" runat="server" CssClass="form-select" Visible="false" />
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
 
                             <div class="row">
                                 <div class="col-md-4 form-group-portal">

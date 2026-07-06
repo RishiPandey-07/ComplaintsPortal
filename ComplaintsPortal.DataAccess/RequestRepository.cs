@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using ComplaintsPortal.Entities;
@@ -271,6 +271,57 @@ namespace ComplaintsPortal.DataAccess
         private string SafeStr(DataRow row, string col)
         {
             return row.Table.Columns.Contains(col) && row[col] != DBNull.Value ? row[col].ToString() : "";
+        }
+
+        public void InsertFieldValues(int requestId, List<RequestFieldValue> fieldValues)
+        {
+            string sql = @"
+                INSERT INTO TRN_REQUEST_FIELD_VALUE 
+                (VALUE_ID, REQUEST_ID, FIELD_ID, VALUE_TEXT, VALUE_NUMBER, VALUE_DATE)
+                VALUES 
+                ((SELECT NVL(MAX(VALUE_ID),0)+1 FROM TRN_REQUEST_FIELD_VALUE), :RequestId, :FieldId, :ValueText, :ValueNumber, :ValueDate)";
+
+            foreach (var fv in fieldValues)
+            {
+                var parameters = new Dictionary<string, object>
+                {
+                    { "RequestId", requestId },
+                    { "FieldId", fv.FieldId },
+                    { "ValueText", string.IsNullOrEmpty(fv.ValueText) ? DBNull.Value : (object)fv.ValueText },
+                    { "ValueNumber", fv.ValueNumber.HasValue ? (object)fv.ValueNumber.Value : DBNull.Value },
+                    { "ValueDate", fv.ValueDate.HasValue ? (object)fv.ValueDate.Value : DBNull.Value }
+                };
+                DbHelper.ExecuteNonQuery(sql, parameters);
+            }
+        }
+
+        public List<RequestFieldValue> GetFieldValues(int requestId)
+        {
+            string sql = @"
+                SELECT v.VALUE_ID, v.REQUEST_ID, v.FIELD_ID, v.VALUE_TEXT, v.VALUE_NUMBER, v.VALUE_DATE,
+                       f.FIELD_LABEL, f.FIELD_TYPE
+                FROM TRN_REQUEST_FIELD_VALUE v
+                JOIN MST_FIELD_DEFINITION f ON f.FIELD_ID = v.FIELD_ID
+                WHERE v.REQUEST_ID = :RequestId
+                ORDER BY f.DISPLAY_ORDER";
+                
+            var dt = DbHelper.ExecuteReader(sql, DbHelper.Param("RequestId", requestId));
+            var list = new List<RequestFieldValue>();
+            foreach (DataRow row in dt.Rows)
+            {
+                list.Add(new RequestFieldValue
+                {
+                    ValueId = Convert.ToInt32(row["VALUE_ID"]),
+                    RequestId = Convert.ToInt32(row["REQUEST_ID"]),
+                    FieldId = Convert.ToInt32(row["FIELD_ID"]),
+                    FieldLabel = row["FIELD_LABEL"].ToString(),
+                    FieldType = row["FIELD_TYPE"].ToString(),
+                    ValueText = row["VALUE_TEXT"] == DBNull.Value ? null : row["VALUE_TEXT"].ToString(),
+                    ValueNumber = row["VALUE_NUMBER"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(row["VALUE_NUMBER"]),
+                    ValueDate = row["VALUE_DATE"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["VALUE_DATE"])
+                });
+            }
+            return list;
         }
     }
 }

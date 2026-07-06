@@ -12,6 +12,7 @@ namespace ComplaintsPortal.Web.Employee
         private readonly WorkflowAdminService _workflowAdminService = new WorkflowAdminService();
         private readonly WorkflowEngineService _workflowEngineService = new WorkflowEngineService();
         private readonly EmployeeRepository _employeeRepo = new EmployeeRepository();
+        private readonly FieldDefinitionService _fieldService = new FieldDefinitionService();
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -58,17 +59,63 @@ namespace ComplaintsPortal.Web.Employee
             BindRequestTypeDropdown();
             BindSubTypeDropdown();
             UpdateFlowPreview();
+            BindCustomFields();
         }
 
         protected void ddlRequestType_SelectedIndexChanged(object sender, EventArgs e)
         {
             BindSubTypeDropdown();
             UpdateFlowPreview();
+            BindCustomFields();
         }
 
         protected void ddlSubType_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateFlowPreview();
+            BindCustomFields();
+        }
+
+        private void BindCustomFields()
+        {
+            if (ddlRequestType.Items.Count == 0) return;
+            
+            int requestTypeId = int.Parse(ddlRequestType.SelectedValue);
+            var fields = _fieldService.GetFieldsByRequestType(requestTypeId, SelectedSubTypeId)
+                                      .Where(f => f.IsActive == "Y").ToList();
+            
+            rptCustomFields.DataSource = fields;
+            rptCustomFields.DataBind();
+        }
+
+        protected void rptCustomFields_ItemDataBound(object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == System.Web.UI.WebControls.ListItemType.Item || e.Item.ItemType == System.Web.UI.WebControls.ListItemType.AlternatingItem)
+            {
+                var field = (FieldDefinition)e.Item.DataItem;
+                
+                var txtSingle = (System.Web.UI.WebControls.TextBox)e.Item.FindControl("txtSingle");
+                var txtMulti = (System.Web.UI.WebControls.TextBox)e.Item.FindControl("txtMulti");
+                var txtNumber = (System.Web.UI.WebControls.TextBox)e.Item.FindControl("txtNumber");
+                var txtDate = (System.Web.UI.WebControls.TextBox)e.Item.FindControl("txtDate");
+                var ddlDropdown = (System.Web.UI.WebControls.DropDownList)e.Item.FindControl("ddlDropdown");
+
+                switch (field.FieldType)
+                {
+                    case "TEXT": txtSingle.Visible = true; break;
+                    case "MULTILINE": txtMulti.Visible = true; break;
+                    case "NUMBER": txtNumber.Visible = true; break;
+                    case "DATE": txtDate.Visible = true; break;
+                    case "DROPDOWN":
+                        ddlDropdown.Visible = true;
+                        if (!string.IsNullOrEmpty(field.DropdownOptions))
+                        {
+                            ddlDropdown.Items.Add(new System.Web.UI.WebControls.ListItem("-- Select --", ""));
+                            foreach (var opt in field.DropdownOptions.Split(','))
+                                ddlDropdown.Items.Add(new System.Web.UI.WebControls.ListItem(opt.Trim(), opt.Trim()));
+                        }
+                        break;
+                }
+            }
         }
 
         private int? SelectedSubTypeId => divSubType.Visible && ddlSubType.Items.Count > 0
@@ -132,7 +179,41 @@ namespace ComplaintsPortal.Web.Employee
             };
 
             string requestNumber;
-            string error = _workflowEngineService.SubmitRequest(request, SelectedSubTypeId, CurrentIp, out requestNumber);
+            
+            // Gather dynamic fields
+            var fieldValues = new System.Collections.Generic.List<RequestFieldValue>();
+            foreach (System.Web.UI.WebControls.RepeaterItem item in rptCustomFields.Items)
+            {
+                var hfId = (System.Web.UI.WebControls.HiddenField)item.FindControl("hfFieldId");
+                var hfType = (System.Web.UI.WebControls.HiddenField)item.FindControl("hfFieldType");
+                var hfMan = (System.Web.UI.WebControls.HiddenField)item.FindControl("hfIsMandatory");
+                
+                string type = hfType.Value;
+                string rawVal = "";
+                
+                if (type == "TEXT") rawVal = ((System.Web.UI.WebControls.TextBox)item.FindControl("txtSingle")).Text;
+                else if (type == "MULTILINE") rawVal = ((System.Web.UI.WebControls.TextBox)item.FindControl("txtMulti")).Text;
+                else if (type == "NUMBER") rawVal = ((System.Web.UI.WebControls.TextBox)item.FindControl("txtNumber")).Text;
+                else if (type == "DATE") rawVal = ((System.Web.UI.WebControls.TextBox)item.FindControl("txtDate")).Text;
+                else if (type == "DROPDOWN") rawVal = ((System.Web.UI.WebControls.DropDownList)item.FindControl("ddlDropdown")).SelectedValue;
+
+                if (hfMan.Value == "Y" && string.IsNullOrWhiteSpace(rawVal))
+                {
+                    lblMessage.Text = "Please fill all mandatory custom fields.";
+                    return;
+                }
+                
+                if (!string.IsNullOrWhiteSpace(rawVal))
+                {
+                    var fv = new RequestFieldValue { FieldId = int.Parse(hfId.Value), FieldType = type };
+                    if (type == "NUMBER") fv.ValueNumber = decimal.Parse(rawVal);
+                    else if (type == "DATE") fv.ValueDate = DateTime.Parse(rawVal);
+                    else fv.ValueText = rawVal.Trim();
+                    fieldValues.Add(fv);
+                }
+            }
+
+            string error = _workflowEngineService.SubmitRequest(request, SelectedSubTypeId, CurrentIp, fieldValues, out requestNumber);
             if (error != null)
             {
                 lblMessage.Text = error;
@@ -150,6 +231,7 @@ namespace ComplaintsPortal.Web.Employee
             txtBuilding.Text = "";
             txtFloor.Text = "";
             txtDescription.Text = "";
+            BindCustomFields(); // Resets dynamic fields
         }
     }
 }

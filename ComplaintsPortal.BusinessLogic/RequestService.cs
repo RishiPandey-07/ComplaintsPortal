@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using ComplaintsPortal.DataAccess;
 using ComplaintsPortal.Entities;
 
@@ -56,6 +56,11 @@ namespace ComplaintsPortal.BusinessLogic
         {
             _requestRepo.MarkResolved(requestId, resolutionRemarks);
             _auditRepo.Log(expertPcno, "REQUEST", requestId.ToString(), "RESOLVE", resolutionRemarks, ip);
+        }
+
+        public List<RequestFieldValue> GetFieldValues(int requestId)
+        {
+            return _requestRepo.GetFieldValues(requestId);
         }
     }
 }

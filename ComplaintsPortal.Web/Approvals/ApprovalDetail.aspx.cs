@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using ComplaintsPortal.BusinessLogic;
 
@@ -29,7 +29,23 @@ namespace ComplaintsPortal.Web.Approvals
             }
 
             litRequestNumber.Text = request.RequestNumber + " &middot; " + request.RequestTypeName;
-            litRequestSummary.Text = request.DivisionName + " division &middot; Status: " + request.Status;
+            litRequestSummary.Text = "From: " + request.RequesterName + " (" + request.RequesterPcno + ") &middot; Status: " + request.Status;
+
+            // Build standard static fields
+            litBasicDetails.Text = $@"
+                <table class='table table-sm borderless'>
+                    <tr><td class='text-muted' style='width:30%;'>Submitted Date</td><td class='fw-500'>{request.SubmittedDate:dd-MMM-yyyy hh:mm tt}</td></tr>
+                    <tr><td class='text-muted'>Division</td><td class='fw-500'>{request.DivisionName}</td></tr>
+                    <tr><td class='text-muted'>Location</td><td class='fw-500'>{request.Building} - {request.Floor} - {request.RoomNo}</td></tr>
+                    <tr><td class='text-muted'>Description</td><td class='fw-500'>{request.Description}</td></tr>
+                </table>
+            ";
+
+            // Bind custom dynamic fields
+            var fields = _requestService.GetFieldValues(RequestId);
+            rptCustomFields.DataSource = fields;
+            rptCustomFields.DataBind();
+            rptCustomFields.Visible = fields.Count > 0;
 
             rptTimeline.DataSource = _workflowEngineService.GetTimeline(RequestId);
             rptTimeline.DataBind();
