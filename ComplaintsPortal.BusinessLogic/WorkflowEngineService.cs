@@ -13,6 +13,7 @@ namespace ComplaintsPortal.BusinessLogic
         private readonly UserRoleRepository _userRoleRepo = new UserRoleRepository();
         private readonly StandbyRepository _standbyRepo = new StandbyRepository();
         private readonly AuditRepository _auditRepo = new AuditRepository();
+        private readonly NotificationService _notificationService = new NotificationService();
 
         /// <summary>Used by the New Request screen's live flow preview.</summary>
         public Workflow GetActiveWorkflow(int requestTypeId, int? subTypeId)
@@ -54,6 +55,13 @@ namespace ComplaintsPortal.BusinessLogic
             var mine = _requestRepo.GetMyRequests(r.RequesterPcno);
             var justCreated = mine.FirstOrDefault(x => x.RequestId == requestId);
             requestNumber = justCreated != null ? justCreated.RequestNumber : "";
+
+            // Notify Requester
+            if (justCreated != null)
+            {
+                _notificationService.NotifyRequesterOnSubmit(justCreated);
+            }
+
             return null;
         }
 
@@ -114,6 +122,18 @@ namespace ComplaintsPortal.BusinessLogic
                 nextStage != null ? "FORWARDED" : "COMPLETED", remarks, nextStage?.StageId);
 
             _auditRepo.Log(actorPcno, "REQUEST", requestId.ToString(), "APPROVE", remarks, ip);
+
+            // Fetch the updated request to notify the next approver or tech expert pool
+            var updatedRequest = _requestRepo.GetById(requestId);
+            if (nextStage == null) 
+            {
+                // Completed workflow, now in tech pool
+                _notificationService.NotifyTechExpertOnPool(updatedRequest);
+            }
+            // (Note: To accurately notify the next specific approver requires evaluating who is in the next stage role/division. 
+            // In a production app, we'd query users mapped to nextStage.ApproverRoleId and updatedRequest.DivisionId.
+            // For simplicity in this demo, if there is a next stage, the workflow continues.)
+
             return null;
         }
 
@@ -141,6 +161,14 @@ namespace ComplaintsPortal.BusinessLogic
                 "REJECTED", remarks, targetStage?.StageId);
 
             _auditRepo.Log(actorPcno, "REQUEST", requestId.ToString(), "REJECT", remarks, ip);
+
+            // Notify Requester
+            var updatedRequest = _requestRepo.GetById(requestId);
+            if (targetStage == null)
+            {
+                _notificationService.NotifyRequesterOnReject(updatedRequest, remarks);
+            }
+
             return null;
         }
 

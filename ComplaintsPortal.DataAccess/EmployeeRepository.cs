@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 
 namespace ComplaintsPortal.DataAccess
 {
@@ -11,7 +11,7 @@ namespace ComplaintsPortal.DataAccess
     {
         public DataRow GetByPcno(string pcno)
         {
-            string sql = @"SELECT PCNO, NAME, DESIGNATION, DIVNAME
+            string sql = @"SELECT PCNO, NAME, DESIGNATION, DIVNAME, lrdemail
                             FROM hrdata.empdetails
                             WHERE PCNO = :pcno";
             var dt = DbHelper.ExecuteReader(sql, DbHelper.Param("pcno", pcno));
@@ -26,6 +26,14 @@ namespace ComplaintsPortal.DataAccess
                                OR PCNO LIKE '%' || :kw || '%'
                             ORDER BY NAME";
             return DbHelper.ExecuteReader(sql, DbHelper.Param("kw", keyword));
+        }
+
+        public string GetEmailByPcno(string pcno)
+        {
+            if (string.IsNullOrEmpty(pcno)) return null;
+            string sql = "SELECT lrdemail FROM hrdata.empdetails WHERE PCNO = :pcno";
+            object result = DbHelper.ExecuteScalar(sql, DbHelper.Param("pcno", pcno));
+            return result != null && result != System.DBNull.Value ? result.ToString() : null;
         }
     }
 }

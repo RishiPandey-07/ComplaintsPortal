@@ -9,6 +9,7 @@ namespace ComplaintsPortal.BusinessLogic
         private readonly RequestRepository _requestRepo = new RequestRepository();
         private readonly TechExpertRepository _techExpertRepo = new TechExpertRepository();
         private readonly AuditRepository _auditRepo = new AuditRepository();
+        private readonly NotificationService _notificationService = new NotificationService();
 
         public string SubmitRequest(ComplaintRequest r, string ip, out string requestNumber)
         {
@@ -26,6 +27,13 @@ namespace ComplaintsPortal.BusinessLogic
             var mine = _requestRepo.GetMyRequests(r.RequesterPcno);
             var justCreated = mine.Find(x => x.RequestId == id);
             requestNumber = justCreated != null ? justCreated.RequestNumber : "";
+
+            if (justCreated != null)
+            {
+                _notificationService.NotifyRequesterOnSubmit(justCreated);
+                _notificationService.NotifyTechExpertOnPool(justCreated); // Since this is a simple request, it goes straight to the pool
+            }
+
             return null;
         }
 
@@ -56,6 +64,12 @@ namespace ComplaintsPortal.BusinessLogic
         {
             _requestRepo.MarkResolved(requestId, resolutionRemarks);
             _auditRepo.Log(expertPcno, "REQUEST", requestId.ToString(), "RESOLVE", resolutionRemarks, ip);
+
+            var updatedRequest = _requestRepo.GetById(requestId);
+            if (updatedRequest != null)
+            {
+                _notificationService.NotifyRequesterOnResolve(updatedRequest);
+            }
         }
 
         public List<RequestFieldValue> GetFieldValues(int requestId)

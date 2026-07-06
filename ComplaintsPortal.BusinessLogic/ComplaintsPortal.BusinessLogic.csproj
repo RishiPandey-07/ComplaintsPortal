@@ -51,6 +51,8 @@
     <Compile Include="WorkflowEngineService.cs" />
     <Compile Include="DashboardService.cs" />
     <Compile Include="ReportService.cs" />
+    <Compile Include="EmailService.cs" />
+    <Compile Include="NotificationService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ComplaintsPortal.DataAccess\ComplaintsPortal.DataAccess.csproj">
