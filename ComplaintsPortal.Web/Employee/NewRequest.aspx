@@ -87,12 +87,21 @@
                                 <asp:TextBox ID="txtDescription" runat="server" CssClass="form-control-portal" TextMode="MultiLine" Rows="4" placeholder="Please provide detailed information about your request..." />
                             </div>
 
+                            <div class="form-group-portal mb-4">
+                                <label class="form-label-portal">Attachment (Optional)</label>
+                                <asp:FileUpload ID="fuAttachment" runat="server" CssClass="form-control-portal" />
+                                <small class="text-muted d-block mt-1">Allowed formats: PDF, DOCX, JPG, PNG (Max 5MB)</small>
+                            </div>
+
                             <asp:Label ID="lblMessage" runat="server" CssClass="text-danger-portal fw-500 d-block mb-3" />
                             
                             <div class="d-flex justify-content-end gap-2">
                                 <asp:Button ID="btnSubmit" runat="server" Text="Submit Request" CssClass="btn-portal btn-primary-portal" OnClick="btnSubmit_Click" />
                             </div>
                         </ContentTemplate>
+                        <Triggers>
+                            <asp:PostBackTrigger ControlID="btnSubmit" />
+                        </Triggers>
                     </asp:UpdatePanel>
                 </div>
             </div>

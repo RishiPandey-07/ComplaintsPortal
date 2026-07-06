@@ -23,9 +23,10 @@ namespace ComplaintsPortal.BusinessLogic
 
         /// <summary>Submits a flow-based request, positioning it at the workflow's first stage.
         /// Falls back to a general (no-flow) submission if no active workflow is configured yet.</summary>
-        public string SubmitRequest(ComplaintRequest r, int? subTypeId, string ip, List<RequestFieldValue> fieldValues, out string requestNumber)
+        public string SubmitRequest(ComplaintRequest r, int? subTypeId, string ip, List<RequestFieldValue> fieldValues, out string requestNumber, out int? newRequestId)
         {
             requestNumber = null;
+            newRequestId = null;
             if (r.RequestTypeId == 0 || string.IsNullOrWhiteSpace(r.RequesterPcno) || r.DivisionId == 0)
                 return "Request type, requester and division are required.";
             if (string.IsNullOrWhiteSpace(r.Description))
@@ -59,6 +60,7 @@ namespace ComplaintsPortal.BusinessLogic
             // Notify Requester
             if (justCreated != null)
             {
+                newRequestId = justCreated.RequestId;
                 _notificationService.NotifyRequesterOnSubmit(justCreated);
             }
 

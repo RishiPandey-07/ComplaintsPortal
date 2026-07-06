@@ -1,12 +1,16 @@
 using System;
 using System.Linq;
 using ComplaintsPortal.BusinessLogic;
+using ComplaintsPortal.DataAccess;
 
 namespace ComplaintsPortal.Web.Admin
 {
     public partial class Dashboard : BasePage
     {
         private readonly DashboardService _dashboardService = new DashboardService();
+        private readonly WorkflowEngineService _workflowEngine = new WorkflowEngineService();
+        private readonly RequestRepository _reqRepo = new RequestRepository();
+        private readonly RequestStageHistoryRepository _histRepo = new RequestStageHistoryRepository();
 
         protected string StatusLabelsJson { get; set; } = "[]";
         protected string StatusValuesJson { get; set; } = "[]";
@@ -23,30 +27,46 @@ namespace ComplaintsPortal.Web.Admin
 
         private void LoadDashboard()
         {
-            // For now, assume any user reaching this page sees their relevant dashboard view.
-            // If they are an Admin (OIC_IT), they see everything. Otherwise, they see their own/division's stats.
-            bool isAdmin = CurrentUser.IsAdmin; 
-            
-            // Note: If you want all employees to have a dashboard, we could check roles.
-            // But this is in the Admin folder, so typically accessed by Admins.
+            bool isAdmin = CurrentUser.IsAdmin;
+            bool isApprover = SessionContext.Roles.Any(r => r.RoleName != "Employee");
 
-            // Load top KPI numbers
-            var stats = _dashboardService.GetStats(CurrentPcno, isAdmin);
-            lblTotal.InnerText = stats.TotalRequests.ToString();
-            lblPending.InnerText = stats.PendingApprovals.ToString();
-            lblInProgress.InnerText = stats.InProgress.ToString();
-            lblCompleted.InnerText = stats.Completed.ToString();
-            lblRejected.InnerText = stats.Rejected.ToString();
-            lblSlaBreached.InnerText = stats.SlaBreached.ToString();
+            // 1. Employee Panel (Always Visible)
+            var myRequests = _reqRepo.GetMyRequests(CurrentPcno);
+            lblEmpActive.InnerText = myRequests.Count(r => r.Status == "IN_PROGRESS" || r.Status == "PENDING").ToString();
+            lblEmpResolved.InnerText = myRequests.Count(r => r.Status == "COMPLETED" || r.Status == "CLOSED").ToString();
 
-            // Load Chart Data
-            var statusData = _dashboardService.GetRequestsByStatus(CurrentPcno, isAdmin);
-            StatusLabelsJson = Newtonsoft.Json.JsonConvert.SerializeObject(statusData.Select(x => x.Label).ToList());
-            StatusValuesJson = Newtonsoft.Json.JsonConvert.SerializeObject(statusData.Select(x => x.Value).ToList());
+            // 2. Approver Panel
+            if (isApprover)
+            {
+                pnlApprover.Visible = true;
+                var pendingApprovals = _workflowEngine.GetPendingApprovals(CurrentPcno);
+                lblApproverPending.InnerText = pendingApprovals.Count.ToString();
+                
+                // Get count of requests sanctioned/forwarded/completed by this user
+                string sql = "SELECT COUNT(DISTINCT REQUEST_ID) FROM TRN_REQUEST_STAGE_HISTORY WHERE ACTION_BY_PCNO = :pcno AND ACTION IN ('FORWARDED', 'COMPLETED', 'REJECTED')";
+                lblApproverSanctioned.InnerText = Convert.ToInt32(DbHelper.ExecuteScalar(sql, DbHelper.Param("pcno", CurrentPcno))).ToString();
+            }
 
-            var typeData = _dashboardService.GetRequestsByType(CurrentPcno, isAdmin);
-            TypeLabelsJson = Newtonsoft.Json.JsonConvert.SerializeObject(typeData.Select(x => x.Label).ToList());
-            TypeValuesJson = Newtonsoft.Json.JsonConvert.SerializeObject(typeData.Select(x => x.Value).ToList());
+            // 3. Global Admin Panel
+            if (isAdmin)
+            {
+                pnlGlobal.Visible = true;
+                var stats = _dashboardService.GetStats(CurrentPcno, isAdmin);
+                lblTotal.InnerText = stats.TotalRequests.ToString();
+                lblPending.InnerText = stats.PendingApprovals.ToString();
+                lblInProgress.InnerText = stats.InProgress.ToString();
+                lblCompleted.InnerText = stats.Completed.ToString();
+                lblRejected.InnerText = stats.Rejected.ToString();
+                lblSlaBreached.InnerText = stats.SlaBreached.ToString();
+
+                var statusData = _dashboardService.GetRequestsByStatus(CurrentPcno, isAdmin);
+                StatusLabelsJson = Newtonsoft.Json.JsonConvert.SerializeObject(statusData.Select(x => x.Label).ToList());
+                StatusValuesJson = Newtonsoft.Json.JsonConvert.SerializeObject(statusData.Select(x => x.Value).ToList());
+
+                var typeData = _dashboardService.GetRequestsByType(CurrentPcno, isAdmin);
+                TypeLabelsJson = Newtonsoft.Json.JsonConvert.SerializeObject(typeData.Select(x => x.Label).ToList());
+                TypeValuesJson = Newtonsoft.Json.JsonConvert.SerializeObject(typeData.Select(x => x.Value).ToList());
+            }
         }
     }
 }

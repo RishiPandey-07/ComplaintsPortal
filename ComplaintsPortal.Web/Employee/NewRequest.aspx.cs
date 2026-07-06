@@ -213,11 +213,40 @@ namespace ComplaintsPortal.Web.Employee
                 }
             }
 
-            string error = _workflowEngineService.SubmitRequest(request, SelectedSubTypeId, CurrentIp, fieldValues, out requestNumber);
+            int? newRequestId;
+            string error = _workflowEngineService.SubmitRequest(request, SelectedSubTypeId, CurrentIp, fieldValues, out requestNumber, out newRequestId);
             if (error != null)
             {
                 lblMessage.Text = error;
                 return;
+            }
+
+            // Handle file upload
+            if (fuAttachment.HasFile && newRequestId.HasValue)
+            {
+                try
+                {
+                    string ext = System.IO.Path.GetExtension(fuAttachment.FileName).ToLower();
+                    string[] allowed = { ".pdf", ".docx", ".doc", ".jpg", ".jpeg", ".png" };
+                    if (allowed.Contains(ext))
+                    {
+                        string uploadDir = Server.MapPath("~/App_Data/Uploads/");
+                        if (!System.IO.Directory.Exists(uploadDir))
+                            System.IO.Directory.CreateDirectory(uploadDir);
+
+                        string safeFileName = $"{requestNumber}_{Guid.NewGuid().ToString().Substring(0, 8)}{ext}";
+                        string savePath = System.IO.Path.Combine(uploadDir, safeFileName);
+                        fuAttachment.SaveAs(savePath);
+
+                        var reqRepo = new ComplaintsPortal.DataAccess.RequestRepository();
+                        reqRepo.InsertAttachment(newRequestId.Value, CurrentPcno, fuAttachment.FileName, $"~/App_Data/Uploads/{safeFileName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Optionally log exception, but don't fail the request submission since it already succeeded
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                }
             }
 
             lblMessage.Text = "";

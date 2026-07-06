@@ -329,5 +329,20 @@ namespace ComplaintsPortal.DataAccess
             }
             return list;
         }
+
+        public void InsertAttachment(int requestId, string pcno, string fileName, string filePath)
+        {
+            string sql = @"
+                INSERT INTO TRN_REQUEST_ATTACHMENT
+                (ATTACHMENT_ID, REQUEST_ID, UPLOADED_BY_PCNO, FILE_NAME, FILE_PATH, UPLOADED_DATE)
+                VALUES
+                ((SELECT NVL(MAX(ATTACHMENT_ID),0)+1 FROM TRN_REQUEST_ATTACHMENT), :reqId, :pcno, :fname, :fpath, SYSTIMESTAMP)";
+            
+            DbHelper.ExecuteNonQuery(sql,
+                DbHelper.Param("reqId", requestId),
+                DbHelper.Param("pcno", pcno),
+                DbHelper.Param("fname", fileName),
+                DbHelper.Param("fpath", filePath));
+        }
     }
 }

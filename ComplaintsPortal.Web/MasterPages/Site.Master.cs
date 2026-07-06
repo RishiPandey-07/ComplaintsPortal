@@ -65,6 +65,7 @@ namespace ComplaintsPortal.Web.MasterPages
 
             // ── Employee section (always visible) ──────────────────────────────
             AddMenuSection("Employee");
+            AddMenuLink("bi-speedometer2", "My Dashboard", "~/Admin/Dashboard.aspx");
             AddMenuLink("bi-plus-circle", "New Request", "~/Employee/NewRequest.aspx");
             AddMenuLink("bi-list-ul", "My Requests", "~/Employee/MyRequests.aspx");
 
@@ -96,7 +97,6 @@ namespace ComplaintsPortal.Web.MasterPages
             if (isAdmin)
             {
                 AddMenuSection("Administration");
-                AddMenuLink("bi-speedometer2", "Dashboard", "~/Admin/Dashboard.aspx");
                 AddMenuLink("bi-file-earmark-spreadsheet", "Reports", "~/Admin/Reports.aspx");
                 AddMenuLink("bi-diagram-3", "Divisions", "~/Admin/Divisions.aspx");
                 AddMenuLink("bi-grid-3x3-gap", "Services", "~/Admin/Services.aspx");
