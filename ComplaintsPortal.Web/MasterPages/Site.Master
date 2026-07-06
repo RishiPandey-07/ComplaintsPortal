@@ -1,0 +1,78 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="ComplaintsPortal.Web.MasterPages.Site" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complaints Portal</title>
+    
+    <!-- Using offline-capable assets if hosted internally, or CDNs if available -->
+    <link href="https://rishi-pandey.lrde.com/passout/Static/bootstrap5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://rishi-pandey.lrde.com/passout/Static/bootstrap-icons-1.13.1/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="~/Content/portal.css" rel="stylesheet" runat="server" />
+
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server">
+            <Scripts>
+                <asp:ScriptReference Path="https://rishi-pandey.lrde.com/passout/Static/bootstrap5.3.2/js/bootstrap.bundle.min.js" />
+                <asp:ScriptReference Path="~/Content/portal.js" />
+            </Scripts>
+        </asp:ScriptManager>
+
+        <div class="portal-shell">
+            <!-- Header -->
+            <header class="portal-header">
+                <a href="<%= ResolveUrl("~/Employee/MyRequests.aspx") %>" class="header-brand">
+                    <div class="header-brand-icon">
+                        <i class="bi bi-hdd-network"></i>
+                    </div>
+                    <div class="header-brand-text">
+                        <div class="header-brand-org"><%= System.Configuration.ConfigurationManager.AppSettings["OrgName"] ?? "ORGANIZATION" %></div>
+                        <div class="header-brand-app"><%= System.Configuration.ConfigurationManager.AppSettings["AppTagline"] ?? "IT Services Portal" %></div>
+                    </div>
+                </a>
+
+                <div class="header-right">
+                    <div class="header-user-chip">
+                        <div class="user-avatar">
+                            <% 
+                                string name = ComplaintsPortal.Web.SessionContext.EmployeeName ?? "U";
+                                Response.Write(name.Substring(0, 1).ToUpper()); 
+                            %>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name"><%= name %></div>
+                            <div class="user-pcno"><%= ComplaintsPortal.Web.SessionContext.Pcno %></div>
+                        </div>
+                    </div>
+
+                    <div class="header-role-switcher" id="divRoleSwitcher" runat="server">
+                        <asp:DropDownList ID="ddlRoleSwitcher" runat="server" AutoPostBack="true"
+                            OnSelectedIndexChanged="ddlRoleSwitcher_SelectedIndexChanged" />
+                    </div>
+
+                    <asp:LinkButton ID="lnkLogout" runat="server" CssClass="btn-logout" OnClick="lnkLogout_Click" ToolTip="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </asp:LinkButton>
+                </div>
+            </header>
+
+            <div class="portal-body">
+                <!-- Sidebar -->
+                <nav class="portal-sidebar">
+                    <asp:PlaceHolder ID="phMenu" runat="server" />
+                </nav>
+
+                <!-- Main Content -->
+                <main class="portal-content">
+                    <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+                </main>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
