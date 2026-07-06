@@ -72,6 +72,12 @@ namespace ComplaintsPortal.BusinessLogic
             }
         }
 
+        public void MarkOnHold(int requestId, string holdRemarks, string expertPcno, string ip)
+        {
+            _requestRepo.MarkOnHold(requestId, holdRemarks);
+            _auditRepo.Log(expertPcno, "REQUEST", requestId.ToString(), "ON_HOLD", holdRemarks, ip);
+        }
+
         public List<RequestFieldValue> GetFieldValues(int requestId)
         {
             return _requestRepo.GetFieldValues(requestId);

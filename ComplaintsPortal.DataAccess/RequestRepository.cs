@@ -113,7 +113,7 @@ namespace ComplaintsPortal.DataAccess
                             JOIN MST_REQUEST_TYPE rt ON rt.REQUEST_TYPE_ID = req.REQUEST_TYPE_ID
                             LEFT JOIN hrdata.empdetails e2 ON e2.PCNO = req.REQUESTER_PCNO
                             WHERE rt.IS_FLOW_BASED = 'N'
-                              AND req.STATUS IN ('SUBMITTED','IN_PROGRESS')
+                              AND req.STATUS IN ('SUBMITTED','IN_PROGRESS','ON_HOLD')
                               AND (req.PICKED_BY_PCNO IS NULL OR req.PICKED_BY_PCNO = :currentPcno)
                             ORDER BY req.SUBMITTED_DATE";
             return MapList(DbHelper.ExecuteReader(sql, DbHelper.Param("currentPcno", currentPcno)));
@@ -138,6 +138,16 @@ namespace ComplaintsPortal.DataAccess
                             WHERE REQUEST_ID = :id";
             DbHelper.ExecuteNonQuery(sql,
                 DbHelper.Param("remarks", resolutionRemarks),
+                DbHelper.Param("id", requestId));
+        }
+
+        public void MarkOnHold(int requestId, string holdRemarks)
+        {
+            string sql = @"UPDATE TRN_REQUEST
+                            SET STATUS = 'ON_HOLD', RESOLUTION_REMARKS = :remarks
+                            WHERE REQUEST_ID = :id";
+            DbHelper.ExecuteNonQuery(sql,
+                DbHelper.Param("remarks", holdRemarks),
                 DbHelper.Param("id", requestId));
         }
 

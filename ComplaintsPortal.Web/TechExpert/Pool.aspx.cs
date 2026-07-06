@@ -33,13 +33,20 @@ namespace ComplaintsPortal.Web.TechExpert
                 }
                 BindGrid();
             }
-            else if (e.CommandName == "Resolve")
+            else if (e.CommandName == "Resolve" || e.CommandName == "OnHold")
             {
                 var control = (Control)e.CommandSource;
                 var row = (GridViewRow)control.NamingContainer;
                 var txtResolution = (TextBox)row.FindControl("txtResolution");
 
-                _requestService.MarkResolved(requestId, txtResolution.Text.Trim(), CurrentPcno, CurrentIp);
+                if (e.CommandName == "Resolve")
+                {
+                    _requestService.MarkResolved(requestId, txtResolution.Text.Trim(), CurrentPcno, CurrentIp);
+                }
+                else
+                {
+                    _requestService.MarkOnHold(requestId, txtResolution.Text.Trim(), CurrentPcno, CurrentIp);
+                }
                 BindGrid();
             }
         }

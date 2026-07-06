@@ -28,10 +28,14 @@
                         Text="Pick Up" CssClass="btn btn-sm btn-primary"
                         Visible='<%# string.IsNullOrEmpty((string)Eval("PickedByPcno")) %>' />
 
-                    <asp:Panel runat="server" Visible='<%# (string)Eval("Status") == "IN_PROGRESS" %>'>
-                        <asp:TextBox runat="server" ID="txtResolution" CssClass="form-control form-control-sm mt-1" placeholder="Resolution remarks" />
-                        <asp:LinkButton runat="server" CommandName="Resolve" CommandArgument='<%# Eval("RequestId") %>'
-                            Text="Mark Resolved" CssClass="btn btn-sm btn-success mt-1" />
+                    <asp:Panel runat="server" Visible='<%# (string)Eval("Status") == "IN_PROGRESS" || (string)Eval("Status") == "ON_HOLD" %>'>
+                        <asp:TextBox runat="server" ID="txtResolution" CssClass="form-control form-control-sm mt-1" placeholder="Resolution / Hold remarks" />
+                        <div class="d-flex gap-1 mt-1">
+                            <asp:LinkButton runat="server" CommandName="Resolve" CommandArgument='<%# Eval("RequestId") %>'
+                                Text="Mark Resolved" CssClass="btn btn-sm btn-success flex-fill" />
+                            <asp:LinkButton runat="server" CommandName="OnHold" CommandArgument='<%# Eval("RequestId") %>'
+                                Text="Put on Hold" CssClass="btn btn-sm btn-warning flex-fill" Visible='<%# (string)Eval("Status") != "ON_HOLD" %>' />
+                        </div>
                     </asp:Panel>
                 </ItemTemplate>
             </asp:TemplateField>
