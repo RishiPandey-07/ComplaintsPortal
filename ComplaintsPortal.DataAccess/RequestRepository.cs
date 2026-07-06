@@ -344,5 +344,17 @@ namespace ComplaintsPortal.DataAccess
                 DbHelper.Param("fname", fileName),
                 DbHelper.Param("fpath", filePath));
         }
+
+        public string[] GetAttachment(int requestId)
+        {
+            // Returns [FileName, FilePath] or null
+            string sql = @"SELECT FILE_NAME, FILE_PATH FROM TRN_REQUEST_ATTACHMENT WHERE REQUEST_ID = :reqId ORDER BY ATTACHMENT_ID DESC";
+            var dt = DbHelper.ExecuteReader(sql, DbHelper.Param("reqId", requestId));
+            if (dt.Rows.Count > 0)
+            {
+                return new string[] { dt.Rows[0]["FILE_NAME"].ToString(), dt.Rows[0]["FILE_PATH"].ToString() };
+            }
+            return null;
+        }
     }
 }

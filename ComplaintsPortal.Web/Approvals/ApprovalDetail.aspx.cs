@@ -50,6 +50,15 @@ namespace ComplaintsPortal.Web.Approvals
             rptTimeline.DataSource = _workflowEngineService.GetTimeline(RequestId);
             rptTimeline.DataBind();
 
+            var reqRepo = new ComplaintsPortal.DataAccess.RequestRepository();
+            var attachment = reqRepo.GetAttachment(RequestId);
+            if (attachment != null)
+            {
+                pnlAttachment.Visible = true;
+                hlAttachment.NavigateUrl = ResolveUrl(attachment[1]); // The file path
+                hlAttachment.Text = "<i class=\"bi bi-download\"></i> Download " + attachment[0]; // The file name
+            }
+
             // Only show the action panel if this request is genuinely pending with the
             // logged-in person right now (direct role or standby) - re-checked server-side
             // rather than trusting the query string, for safety.

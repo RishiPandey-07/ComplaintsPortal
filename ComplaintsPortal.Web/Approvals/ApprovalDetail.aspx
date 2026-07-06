@@ -37,6 +37,13 @@
                         </ItemTemplate>
                         <FooterTemplate></table></FooterTemplate>
                     </asp:Repeater>
+                    
+                    <asp:Panel ID="pnlAttachment" runat="server" Visible="false" CssClass="mt-3 p-3 bg-light rounded border">
+                        <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-paperclip"></i> Attached File</h6>
+                        <asp:HyperLink ID="hlAttachment" runat="server" Target="_blank" CssClass="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download"></i> Download Attachment
+                        </asp:HyperLink>
+                    </asp:Panel>
                 </div>
             </div>
             
