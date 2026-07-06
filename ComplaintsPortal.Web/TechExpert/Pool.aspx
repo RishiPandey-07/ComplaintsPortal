@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Complaint Pool" Language="C#" MasterPageFile="~/MasterPages/Site.master" AutoEventWireup="true" CodeBehind="Pool.aspx.cs" Inherits="ComplaintsPortal.Web.TechExpert.Pool" %>
+<%@ Page Title="Complaint Pool" Language="C#" MasterPageFile="~/MasterPages/Site.master" AutoEventWireup="true" CodeBehind="Pool.aspx.cs" Inherits="ComplaintsPortal.Web.TechExpert.Pool" %>
 
 <asp:Content ContentPlaceHolderID="MainContent" runat="server">
     <h4>Complaint Pool</h4>
@@ -15,6 +15,13 @@
             <asp:BoundField DataField="Description" HeaderText="Description" />
             <asp:BoundField DataField="SubmittedDate" HeaderText="Submitted" DataFormatString="{0:dd-MMM-yyyy hh:mm tt}" />
             <asp:BoundField DataField="Status" HeaderText="Status" />
+            <asp:TemplateField HeaderText="SLA Status">
+                <ItemTemplate>
+                    <span class='<%# IsSlaBreached(Eval("SlaDueDate")) ? "badge bg-danger" : "" %>'>
+                        <%# IsSlaBreached(Eval("SlaDueDate")) ? "SLA Breached" : "" %>
+                    </span>
+                </ItemTemplate>
+            </asp:TemplateField>
             <asp:TemplateField HeaderText="Actions">
                 <ItemTemplate>
                     <asp:LinkButton runat="server" CommandName="PickUp" CommandArgument='<%# Eval("RequestId") %>'

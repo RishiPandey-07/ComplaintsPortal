@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ComplaintsPortal.BusinessLogic;
 
 namespace ComplaintsPortal.Web.Approvals
@@ -14,6 +14,12 @@ namespace ComplaintsPortal.Web.Approvals
                 gvPending.DataSource = _workflowEngineService.GetPendingApprovals(CurrentPcno);
                 gvPending.DataBind();
             }
+        }
+
+        protected bool IsSlaBreached(object slaDueDate)
+        {
+            if (slaDueDate == null || slaDueDate == DBNull.Value) return false;
+            return Convert.ToDateTime(slaDueDate) < DateTime.Now;
         }
     }
 }

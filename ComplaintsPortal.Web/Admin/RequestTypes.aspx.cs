@@ -45,7 +45,8 @@ namespace ComplaintsPortal.Web.Admin
                 ServiceId = int.Parse(ddlService.SelectedValue),
                 TypeCode = txtCode.Text.Trim(),
                 TypeName = txtName.Text.Trim(),
-                IsFlowBased = chkFlowBased.Checked ? "Y" : "N"
+                IsFlowBased = chkFlowBased.Checked ? "Y" : "N",
+                SlaHours = string.IsNullOrWhiteSpace(txtSla.Text) ? (int?)null : int.Parse(txtSla.Text)
             };
 
             string error = _masterDataService.SaveRequestType(rt, CurrentPcno, CurrentIp);
@@ -72,6 +73,7 @@ namespace ComplaintsPortal.Web.Admin
                     ddlService.SelectedValue = rt.ServiceId.ToString();
                     txtCode.Text = rt.TypeCode;
                     txtName.Text = rt.TypeName;
+                    txtSla.Text = rt.SlaHours?.ToString() ?? "";
                     chkFlowBased.Checked = rt.IsFlowBased == "Y";
                     modalTitle.InnerText = "Edit Request Type";
                     

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Data;
 using ComplaintsPortal.Entities;
 
@@ -6,13 +6,15 @@ namespace ComplaintsPortal.DataAccess
 {
     public class RequestTypeRepository
     {
-        public List<RequestType> GetAll(bool activeOnly = false)
+        public List<RequestType> GetAll(bool activeOnly = true, int? serviceId = null)
         {
             string sql = @"SELECT rt.REQUEST_TYPE_ID, rt.SERVICE_ID, s.SERVICE_NAME,
-                                   rt.TYPE_CODE, rt.TYPE_NAME, rt.IS_FLOW_BASED, rt.IS_ACTIVE
+                                   rt.TYPE_CODE, rt.TYPE_NAME, rt.IS_FLOW_BASED, rt.SLA_HOURS, rt.IS_ACTIVE
                             FROM MST_REQUEST_TYPE rt
-                            JOIN MST_SERVICE s ON s.SERVICE_ID = rt.SERVICE_ID";
-            if (activeOnly) sql += " WHERE rt.IS_ACTIVE = 'Y'";
+                            JOIN MST_SERVICE s ON s.SERVICE_ID = rt.SERVICE_ID
+                            WHERE 1=1";
+            if (activeOnly) sql += " AND rt.IS_ACTIVE = 'Y'";
+            if (serviceId.HasValue) sql += " AND rt.SERVICE_ID = " + serviceId.Value;
             sql += " ORDER BY s.SERVICE_NAME, rt.TYPE_NAME";
 
             var dt = DbHelper.ExecuteReader(sql);
@@ -27,6 +29,7 @@ namespace ComplaintsPortal.DataAccess
                     TypeCode = row["TYPE_CODE"].ToString(),
                     TypeName = row["TYPE_NAME"].ToString(),
                     IsFlowBased = row["IS_FLOW_BASED"].ToString(),
+                    SlaHours = row["SLA_HOURS"] == DBNull.Value ? (int?)null : int.Parse(row["SLA_HOURS"].ToString()),
                     IsActive = row["IS_ACTIVE"].ToString()
                 });
             }
@@ -59,27 +62,35 @@ namespace ComplaintsPortal.DataAccess
             return list;
         }
 
-        public void Insert(RequestType rt)
+        public void Insert(RequestType r)
         {
-            // Phase 1: IS_FLOW_BASED is always 'N' - workflow engine arrives in Phase 2
-            string sql = @"INSERT INTO MST_REQUEST_TYPE (SERVICE_ID, TYPE_CODE, TYPE_NAME, IS_FLOW_BASED, IS_ACTIVE)
-                            VALUES (:serviceId, :code, :name, 'N', 'Y')";
-            DbHelper.ExecuteNonQuery(sql,
-                DbHelper.Param("serviceId", rt.ServiceId),
-                DbHelper.Param("code", rt.TypeCode),
-                DbHelper.Param("name", rt.TypeName));
+            string sql = @"INSERT INTO MST_REQUEST_TYPE (REQUEST_TYPE_ID, SERVICE_ID, TYPE_CODE, TYPE_NAME, IS_FLOW_BASED, SLA_HOURS, IS_ACTIVE)
+                            VALUES ((SELECT NVL(MAX(REQUEST_TYPE_ID),0)+1 FROM MST_REQUEST_TYPE), :ServiceId, :Code, :Name, :Flow, :Sla, 'Y')";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "ServiceId", r.ServiceId },
+                { "Code", r.TypeCode },
+                { "Name", r.TypeName },
+                { "Flow", r.IsFlowBased },
+                { "Sla", r.SlaHours.HasValue ? (object)r.SlaHours.Value : DBNull.Value }
+            };
+            DbHelper.ExecuteNonQuery(sql, parameters);
         }
 
-        public void Update(RequestType rt)
+        public void Update(RequestType r)
         {
-            string sql = @"UPDATE MST_REQUEST_TYPE
-                            SET SERVICE_ID = :serviceId, TYPE_CODE = :code, TYPE_NAME = :name
-                            WHERE REQUEST_TYPE_ID = :id";
-            DbHelper.ExecuteNonQuery(sql,
-                DbHelper.Param("serviceId", rt.ServiceId),
-                DbHelper.Param("code", rt.TypeCode),
-                DbHelper.Param("name", rt.TypeName),
-                DbHelper.Param("id", rt.RequestTypeId));
+            string sql = "UPDATE MST_REQUEST_TYPE SET SERVICE_ID = :ServiceId, TYPE_CODE = :Code, TYPE_NAME = :Name, IS_FLOW_BASED = :Flow, SLA_HOURS = :Sla WHERE REQUEST_TYPE_ID = :Id";
+            var parameters = new Dictionary<string, object>
+            {
+                { "ServiceId", r.ServiceId },
+                { "Code", r.TypeCode },
+                { "Name", r.TypeName },
+                { "Flow", r.IsFlowBased },
+                { "Sla", r.SlaHours.HasValue ? (object)r.SlaHours.Value : DBNull.Value },
+                { "Id", r.RequestTypeId }
+            };
+            DbHelper.ExecuteNonQuery(sql, parameters);
         }
 
         public void SetActive(int requestTypeId, bool active)

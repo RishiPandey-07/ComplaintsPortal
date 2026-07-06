@@ -18,10 +18,11 @@ namespace ComplaintsPortal.DataAccess
 
             string sql = @"INSERT INTO TRN_REQUEST
                                 (REQUEST_NUMBER, REQUEST_TYPE_ID, SUBTYPE_ID, WORKFLOW_ID, REQUESTER_PCNO,
-                                 DIVISION_ID, CURRENT_STAGE_ID, STATUS, SUBMITTED_DATE)
+                                 DIVISION_ID, CURRENT_STAGE_ID, STATUS, SUBMITTED_DATE, SLA_DUE_DATE)
                             VALUES
                                 (:reqNo, :typeId, :subTypeId, :workflowId, :pcno,
-                                 :divId, :stageId, :status, SYSTIMESTAMP)
+                                 :divId, :stageId, :status, SYSTIMESTAMP,
+                                 (SELECT CASE WHEN SLA_HOURS IS NOT NULL THEN SYSTIMESTAMP + NUMTODSINTERVAL(SLA_HOURS, 'HOUR') ELSE NULL END FROM MST_REQUEST_TYPE WHERE REQUEST_TYPE_ID = :typeId))
                             RETURNING REQUEST_ID INTO :out_id";
 
             int requestId = DbHelper.ExecuteInsertReturningId(sql, new[]
@@ -54,9 +55,10 @@ namespace ComplaintsPortal.DataAccess
             string requestNumber = GenerateRequestNumber();
 
             string sql = @"INSERT INTO TRN_REQUEST
-                                (REQUEST_NUMBER, REQUEST_TYPE_ID, REQUESTER_PCNO, DIVISION_ID, STATUS, SUBMITTED_DATE)
+                                (REQUEST_NUMBER, REQUEST_TYPE_ID, REQUESTER_PCNO, DIVISION_ID, STATUS, SUBMITTED_DATE, SLA_DUE_DATE)
                             VALUES
-                                (:reqNo, :typeId, :pcno, :divId, 'SUBMITTED', SYSTIMESTAMP)
+                                (:reqNo, :typeId, :pcno, :divId, 'SUBMITTED', SYSTIMESTAMP,
+                                 (SELECT CASE WHEN SLA_HOURS IS NOT NULL THEN SYSTIMESTAMP + NUMTODSINTERVAL(SLA_HOURS, 'HOUR') ELSE NULL END FROM MST_REQUEST_TYPE WHERE REQUEST_TYPE_ID = :typeId))
                             RETURNING REQUEST_ID INTO :out_id";
 
             int requestId = DbHelper.ExecuteInsertReturningId(sql, new[]
@@ -89,7 +91,7 @@ namespace ComplaintsPortal.DataAccess
         {
             string sql = @"SELECT req.REQUEST_ID, req.REQUEST_NUMBER, req.REQUEST_TYPE_ID, rt.TYPE_NAME,
                                    req.STATUS, req.PICKED_BY_PCNO, e.NAME AS PICKED_NAME, req.PICKED_DATE,
-                                   req.SUBMITTED_DATE, req.CLOSED_DATE, req.ROOM_NO, req.BUILDING, req.FLOOR,
+                                   req.SUBMITTED_DATE, req.CLOSED_DATE, req.SLA_DUE_DATE, req.ROOM_NO, req.BUILDING, req.FLOOR,
                                    req.DESCRIPTION, req.RESOLUTION_REMARKS
                             FROM TRN_REQUEST req
                             JOIN MST_REQUEST_TYPE rt ON rt.REQUEST_TYPE_ID = req.REQUEST_TYPE_ID
@@ -105,7 +107,7 @@ namespace ComplaintsPortal.DataAccess
             // Pool covers general (non-flow) requests only in Phase 1.
             string sql = @"SELECT req.REQUEST_ID, req.REQUEST_NUMBER, req.REQUEST_TYPE_ID, rt.TYPE_NAME,
                                    req.STATUS, req.PICKED_BY_PCNO, req.PICKED_DATE, req.REQUESTER_PCNO,
-                                   e2.NAME AS REQUESTER_NAME, req.SUBMITTED_DATE, req.ROOM_NO, req.BUILDING,
+                                   e2.NAME AS REQUESTER_NAME, req.SUBMITTED_DATE, req.SLA_DUE_DATE, req.ROOM_NO, req.BUILDING,
                                    req.FLOOR, req.DESCRIPTION
                             FROM TRN_REQUEST req
                             JOIN MST_REQUEST_TYPE rt ON rt.REQUEST_TYPE_ID = req.REQUEST_TYPE_ID
@@ -201,6 +203,8 @@ namespace ComplaintsPortal.DataAccess
                     SubmittedDate = Convert.ToDateTime(row["SUBMITTED_DATE"]),
                     ClosedDate = row.Table.Columns.Contains("CLOSED_DATE") && row["CLOSED_DATE"] != DBNull.Value
                         ? Convert.ToDateTime(row["CLOSED_DATE"]) : (DateTime?)null,
+                    SlaDueDate = row.Table.Columns.Contains("SLA_DUE_DATE") && row["SLA_DUE_DATE"] != DBNull.Value
+                        ? Convert.ToDateTime(row["SLA_DUE_DATE"]) : (DateTime?)null,
                     RoomNo = SafeStr(row, "ROOM_NO"),
                     Building = SafeStr(row, "BUILDING"),
                     Floor = SafeStr(row, "FLOOR"),
@@ -215,7 +219,7 @@ namespace ComplaintsPortal.DataAccess
             string sql = @"SELECT req.REQUEST_ID, req.REQUEST_NUMBER, req.REQUEST_TYPE_ID, rt.TYPE_NAME,
                                    req.SUBTYPE_ID, req.WORKFLOW_ID, req.CURRENT_STAGE_ID, req.STATUS,
                                    req.REQUESTER_PCNO, e.NAME AS REQUESTER_NAME, req.DIVISION_ID, d.DIVISION_NAME,
-                                   req.SUBMITTED_DATE, req.CLOSED_DATE, req.ROOM_NO, req.BUILDING, req.FLOOR,
+                                   req.SUBMITTED_DATE, req.CLOSED_DATE, req.SLA_DUE_DATE, req.ROOM_NO, req.BUILDING, req.FLOOR,
                                    req.DESCRIPTION, req.RESOLUTION_REMARKS
                             FROM TRN_REQUEST req
                             JOIN MST_REQUEST_TYPE rt ON rt.REQUEST_TYPE_ID = req.REQUEST_TYPE_ID
@@ -235,7 +239,7 @@ namespace ComplaintsPortal.DataAccess
         public List<PendingApprovalItem> GetSpecificPersonStageRequests()
         {
             string sql = @"SELECT req.REQUEST_ID, req.REQUEST_NUMBER, rt.TYPE_NAME, req.DIVISION_ID, d.DIVISION_NAME,
-                                   req.REQUESTER_PCNO, e.NAME AS REQUESTER_NAME, req.SUBMITTED_DATE,
+                                   req.REQUESTER_PCNO, e.NAME AS REQUESTER_NAME, req.SUBMITTED_DATE, req.SLA_DUE_DATE,
                                    req.CURRENT_STAGE_ID, s.STAGE_NAME, s.APPROVER_ROLE_ID, r.ROLE_NAME, r.REQUIRES_DIVISION
                             FROM TRN_REQUEST req
                             JOIN MST_REQUEST_TYPE rt ON rt.REQUEST_TYPE_ID = req.REQUEST_TYPE_ID
@@ -259,6 +263,8 @@ namespace ComplaintsPortal.DataAccess
                     RequesterPcno = row["REQUESTER_PCNO"].ToString(),
                     RequesterName = row["REQUESTER_NAME"] == DBNull.Value ? "" : row["REQUESTER_NAME"].ToString(),
                     SubmittedDate = Convert.ToDateTime(row["SUBMITTED_DATE"]),
+                    SlaDueDate = row.Table.Columns.Contains("SLA_DUE_DATE") && row["SLA_DUE_DATE"] != DBNull.Value
+                        ? Convert.ToDateTime(row["SLA_DUE_DATE"]) : (DateTime?)null,
                     CurrentStageId = int.Parse(row["CURRENT_STAGE_ID"].ToString()),
                     CurrentStageName = row["STAGE_NAME"].ToString(),
                     ApproverRoleId = int.Parse(row["APPROVER_ROLE_ID"].ToString()),

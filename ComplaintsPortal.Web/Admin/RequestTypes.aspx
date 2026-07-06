@@ -26,6 +26,7 @@
                                 <asp:BoundField DataField="TypeCode" HeaderText="Code" />
                                 <asp:BoundField DataField="TypeName" HeaderText="Name" />
                                 <asp:BoundField DataField="IsFlowBased" HeaderText="Flow Based?" />
+                                <asp:BoundField DataField="SlaHours" HeaderText="SLA (Hrs)" />
                                 <asp:TemplateField HeaderText="Status">
                                     <ItemTemplate>
                                         <span class='<%# (string)Eval("IsActive") == "Y" ? "badge-status badge-active" : "badge-status badge-inactive" %>'>
@@ -84,6 +85,11 @@
                                 <asp:TextBox ID="txtName" runat="server" CssClass="form-control-portal" MaxLength="150" placeholder="e.g. Network Issue" />
                             </div>
 
+                            <div class="form-group-portal">
+                                <label class="form-label-portal">SLA Hours</label>
+                                <asp:TextBox ID="txtSla" runat="server" CssClass="form-control-portal" TextMode="Number" placeholder="e.g. 24" />
+                            </div>
+
                             <div class="form-group-portal mb-0">
                                 <div class="form-check">
                                     <asp:CheckBox ID="chkFlowBased" runat="server" CssClass="form-check-input" />
@@ -113,6 +119,7 @@
             document.getElementById('<%= hfRequestTypeId.ClientID %>').value = "0";
             document.getElementById('<%= txtCode.ClientID %>').value = "";
             document.getElementById('<%= txtName.ClientID %>').value = "";
+            document.getElementById('<%= txtSla.ClientID %>').value = "";
             document.getElementById('<%= chkFlowBased.ClientID %>').checked = false;
             document.getElementById('<%= modalTitle.ClientID %>').innerText = "Add Request Type";
             getModal().show();

@@ -10,87 +10,60 @@
 namespace ComplaintsPortal.Web.Admin {
     
     
-    public partial class RequestTypes {
+    public partial class Dashboard {
         
         /// <summary>
-        /// hfRequestTypeId control.
+        /// lblTotal control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfRequestTypeId;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblTotal;
         
         /// <summary>
-        /// ddlService control.
+        /// lblPending control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlService;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblPending;
         
         /// <summary>
-        /// txtCode control.
+        /// lblInProgress control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCode;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblInProgress;
         
         /// <summary>
-        /// txtName control.
+        /// lblCompleted control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtName;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblCompleted;
         
         /// <summary>
-        /// txtSla control.
+        /// lblRejected control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSla;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblRejected;
         
         /// <summary>
-        /// lblMessage control.
+        /// lblSlaBreached control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblMessage;
-        
-        /// <summary>
-        /// btnSave control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSave;
-        
-        /// <summary>
-        /// btnClear control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnClear;
-        
-        /// <summary>
-        /// gvRequestTypes control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvRequestTypes;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblSlaBreached;
     }
 }

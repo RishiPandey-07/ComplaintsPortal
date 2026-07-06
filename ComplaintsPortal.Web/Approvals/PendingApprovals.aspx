@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Pending Approvals" Language="C#" MasterPageFile="~/MasterPages/Site.master" AutoEventWireup="true" CodeBehind="PendingApprovals.aspx.cs" Inherits="ComplaintsPortal.Web.Approvals.PendingApprovals" %>
+<%@ Page Title="Pending Approvals" Language="C#" MasterPageFile="~/MasterPages/Site.master" AutoEventWireup="true" CodeBehind="PendingApprovals.aspx.cs" Inherits="ComplaintsPortal.Web.Approvals.PendingApprovals" %>
 
 <asp:Content ContentPlaceHolderID="MainContent" runat="server">
     <h4>Pending Approvals</h4>
@@ -12,10 +12,13 @@
             <asp:BoundField DataField="RequesterName" HeaderText="Raised By" />
             <asp:BoundField DataField="CurrentStageName" HeaderText="Stage" />
             <asp:BoundField DataField="SubmittedDate" HeaderText="Submitted" DataFormatString="{0:dd-MMM-yyyy hh:mm tt}" />
-            <asp:TemplateField HeaderText="Standby?">
+            <asp:TemplateField HeaderText="Status / SLA">
                 <ItemTemplate>
-                    <span class='<%# (bool)Eval("IsStandbyItem") ? "badge bg-warning text-dark" : "" %>'>
+                    <span class='<%# (bool)Eval("IsStandbyItem") ? "badge bg-warning text-dark me-1" : "" %>'>
                         <%# (bool)Eval("IsStandbyItem") ? "Standby" : "" %>
+                    </span>
+                    <span class='<%# IsSlaBreached(Eval("SlaDueDate")) ? "badge bg-danger" : "" %>'>
+                        <%# IsSlaBreached(Eval("SlaDueDate")) ? "SLA Breached" : "" %>
                     </span>
                 </ItemTemplate>
             </asp:TemplateField>

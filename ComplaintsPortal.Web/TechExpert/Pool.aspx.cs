@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using ComplaintsPortal.BusinessLogic;
@@ -42,6 +42,12 @@ namespace ComplaintsPortal.Web.TechExpert
                 _requestService.MarkResolved(requestId, txtResolution.Text.Trim(), CurrentPcno, CurrentIp);
                 BindGrid();
             }
+        }
+
+        protected bool IsSlaBreached(object slaDueDate)
+        {
+            if (slaDueDate == null || slaDueDate == DBNull.Value) return false;
+            return Convert.ToDateTime(slaDueDate) < DateTime.Now;
         }
     }
 }

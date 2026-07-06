@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace ComplaintsPortal.Entities
 {
@@ -19,8 +19,11 @@ namespace ComplaintsPortal.Entities
         public string PickedByPcno { get; set; }
         public string PickedByName { get; set; }
         public DateTime? PickedDate { get; set; }
+        public int RejectionCount { get; set; }
+        
         public DateTime SubmittedDate { get; set; }
         public DateTime? ClosedDate { get; set; }
+        public DateTime? SlaDueDate { get; set; }
 
         // Phase 1 static fields (replaced by dynamic form values from Phase 3 onward)
         public string RoomNo { get; set; }

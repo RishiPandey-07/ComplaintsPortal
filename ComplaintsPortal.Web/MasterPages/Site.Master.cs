@@ -96,6 +96,8 @@ namespace ComplaintsPortal.Web.MasterPages
             if (isAdmin)
             {
                 AddMenuSection("Administration");
+                AddMenuLink("bi-speedometer2", "Dashboard", "~/Admin/Dashboard.aspx");
+                AddMenuLink("bi-file-earmark-spreadsheet", "Reports", "~/Admin/Reports.aspx");
                 AddMenuLink("bi-diagram-3", "Divisions", "~/Admin/Divisions.aspx");
                 AddMenuLink("bi-grid-3x3-gap", "Services", "~/Admin/Services.aspx");
                 AddMenuLink("bi-tags", "Request Types", "~/Admin/RequestTypes.aspx");

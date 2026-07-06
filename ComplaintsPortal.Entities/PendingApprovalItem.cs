@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace ComplaintsPortal.Entities
 {
@@ -12,6 +12,7 @@ namespace ComplaintsPortal.Entities
         public string RequesterPcno { get; set; }
         public string RequesterName { get; set; }
         public DateTime SubmittedDate { get; set; }
+        public DateTime? SlaDueDate { get; set; }
         public int CurrentStageId { get; set; }
         public string CurrentStageName { get; set; }
         public int ApproverRoleId { get; set; }
