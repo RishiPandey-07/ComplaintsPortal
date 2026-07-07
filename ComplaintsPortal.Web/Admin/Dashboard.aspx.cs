@@ -60,12 +60,15 @@ namespace ComplaintsPortal.Web.Admin
                 lblSlaBreached.InnerText = stats.SlaBreached.ToString();
 
                 var statusData = _dashboardService.GetRequestsByStatus(CurrentPcno, isAdmin);
-                StatusLabelsJson = Newtonsoft.Json.JsonConvert.SerializeObject(statusData.Select(x => x.Label).ToList());
-                StatusValuesJson = Newtonsoft.Json.JsonConvert.SerializeObject(statusData.Select(x => x.Value).ToList());
-
                 var typeData = _dashboardService.GetRequestsByType(CurrentPcno, isAdmin);
-                TypeLabelsJson = Newtonsoft.Json.JsonConvert.SerializeObject(typeData.Select(x => x.Label).ToList());
-                TypeValuesJson = Newtonsoft.Json.JsonConvert.SerializeObject(typeData.Select(x => x.Value).ToList());
+
+                var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+
+                StatusLabelsJson = serializer.Serialize(statusData.Select(x => x.Label).ToList());
+                StatusValuesJson = serializer.Serialize(statusData.Select(x => x.Value).ToList());
+
+                TypeLabelsJson = serializer.Serialize(typeData.Select(x => x.Label).ToList());
+                TypeValuesJson = serializer.Serialize(typeData.Select(x => x.Value).ToList());
             }
         }
     }
